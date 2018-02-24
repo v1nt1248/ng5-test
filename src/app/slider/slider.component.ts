@@ -5,7 +5,7 @@ export interface SliderParams {
   end: number;
   from: number;
   to: number;
-  constraints: [{from: number, to: number}];
+  constraints: {from: number, to: number}[];
 }
 
 const BODY_HEIGHT = 8;
@@ -17,20 +17,19 @@ const POINT_SIZE = 16;
   styleUrls: ['./slider.component.scss']
 })
 export class SliderComponent implements OnInit {
-  @Input() params: SliderParams;
+  @Input() props: SliderParams;
   @Output() changed = new EventEmitter<{from: number, to: number}>();
 
   @ViewChild('sliderBody')
   sliderBody: ElementRef;
-  @ViewChild('pointLeft')
-  pontLeft: ElementRef;
-  @ViewChild('pointRight')
-  pontRight: ElementRef;
 
+  private params: SliderParams;
   private state: {
     from: number;
     to: number;
   };
+  private sliderError: boolean;
+  private blocks: {from: number; to: number; error: boolean}[];
   private points: {
     left: number;
     leftStartState: number;
@@ -44,10 +43,23 @@ export class SliderComponent implements OnInit {
   constructor() { }
 
   ngOnInit() {
+    this.params = {
+      begin: !this.props.begin ? 0 : this.props.begin,
+      end: null,
+      from: null,
+      to: null,
+      constraints: !this.props.constraints ? [] : this.props.constraints
+    };
+    this.params.end = !this.props.end || (this.props.end && this.props.end <= this.params.begin) ? this.params.begin + 100 : this.props.end;
+    this.params.from = !this.props.from || this.props.from >= this.params.end || this.props.from < this.params.from ? 0 : this.props.from;
+    this.params.to = !this.props.to || this.props.to <= this.params.from || this.props.to > this.params.end ? this.params.from + 10 : this.props.to;
+
     this.state = {
       from: this.params.from,
       to: this.params.to
     };
+    this.blocks = this.params.constraints.map(item => this.checkBlock(item));
+    this.sliderError = !this.checkState();
     this.points = {
       left: null,
       leftStartState: this.params.from,
@@ -68,8 +80,6 @@ export class SliderComponent implements OnInit {
       return (part === 'center') ? sliderBodyElem.width : sliderBodyElem.width - POINT_SIZE / 2;
     }
     const pos = Math.round((state - this.params.begin) / (this.params.end - this.params.begin) * sliderBodyElem.width - (part !== 'center' ? POINT_SIZE / 2 : 0));
-
-    // console.log(`P: ${part} | St: ${state} | STATES: ${JSON.stringify(this.state)}`);
     return pos;
   }
 
@@ -89,7 +99,7 @@ export class SliderComponent implements OnInit {
     return styles;
   }
 
-  blockedIntervalStyle(block: {from: number, to: number}): {[key: string]: string} {
+  blockedIntervalStyle(block: {from: number, to: number, error: boolean}): {[key: string]: string} {
     const left = {
       from: this.transformStateToPosition(block.from, 'center'),
       to: this.transformStateToPosition(block.to, 'center')
@@ -100,9 +110,35 @@ export class SliderComponent implements OnInit {
     };
   }
 
+  stateIntervalStyle(state): {[key: string]: string} {
+    const left = {
+      from: this.transformStateToPosition(state.from, 'center'),
+      to: this.transformStateToPosition(state.to, 'center')
+    };
+    return {
+      left: `${left.from}px`,
+      width: `${left.to - left.from}px`
+    };
+  }
+
+  checkBlock(block: {from: number, to: number, error?: boolean}): {from: number, to: number, error: boolean} {
+    let isPresent = false;
+    for (let i = this.state.from; i <= this.state.to; i++) {
+      isPresent = (i >= block.from && i <= block.to) ? true : isPresent;
+    }
+    return {
+      from: block.from,
+      to: block.to,
+      error: isPresent ? true : false
+    };
+  }
+
+  checkState(): boolean {
+    return !this.blocks.some(item => item.error);
+  }
+
   onMouseDown(ev: MouseEvent, field: 'left'|'right'): void {
     this.points[field] = ev.clientX;
-    // console.log(`field: ${field} | posDown: ${this.points[field]}`);
   }
 
   onMouseUp(): void {
@@ -110,6 +146,9 @@ export class SliderComponent implements OnInit {
     this.points.right = null;
     this.points.leftStartState = this.state.from;
     this.points.rightStartState = this.state.to;
+    if (this.checkState()) {
+      this.changed.emit(this.state);
+    }
   }
 
   onMouseOut(ev: MouseEvent): void {
@@ -142,7 +181,15 @@ export class SliderComponent implements OnInit {
             this.points.rightStyles = this.getPointStyles('right');
           }
       }
+      this.blocks = this.blocks.map(item => this.checkBlock(item)).slice();
+      this.sliderError = !this.checkState();
     }
+  }
+
+  onResize(ev) {
+    this.unitSize = this.sliderBody.nativeElement.getBoundingClientRect().width / (this.params.end - this.params.begin);
+    this.points.leftStyles = this.getPointStyles('left');
+    this.points.rightStyles = this.getPointStyles('right');
   }
 
 }

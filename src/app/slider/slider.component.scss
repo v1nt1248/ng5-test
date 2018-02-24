@@ -18,6 +18,7 @@
     width: calc(100% - 100px);
     border: 1px solid rgba(0, 0, 0, 0.1);
     user-select: none;
+    background-color: transparent;
 
     &-point {
       position: absolute;
@@ -41,8 +42,23 @@
     &-block {
       position: absolute;
       height: 100%;
-      background-color: #ef5350;
+      background-color: transparent;
       z-index: 2;
+
+      &-error {
+        background-color: #ef5350;
+      }
+    }
+
+    &-state {
+      position: absolute;
+      height: 100%;
+      background-color: #dddddd;
+      z-index: 2;
+
+      &-error {
+        background-color: transparent;
+      }
     }
   }
 }

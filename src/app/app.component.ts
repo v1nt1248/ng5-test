@@ -6,11 +6,22 @@ import { Component } from '@angular/core';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-  params = {
-    begin: 0,
-    end: 100,
-    from: 0,
-    to: 100,
-    constraints: [{from: 30, to: 40}]
+  private params = {
+    begin: 20, // начало диапазона Slider
+    end: 200, // конец диапазона Slider
+    from: 100, // начальное значение начала выбранного диапазона
+    to: 150, // начальное значение окончания выбранного диапазона
+    constraints: [{from: 50, to: 80}, {from: 160, to: 180}]
   };
+  private interval = {
+    from: null,
+    to: null
+  };
+
+  onChange(value: {from: number, to: number}): void {
+    if (JSON.stringify(this.interval) !== JSON.stringify(value)) {
+      this.interval = Object.assign({}, value);
+      console.log(`Выбран диапазон от ${value.from} до ${value.to}`);
+    }
+  }
 }

@@ -1,28 +1,30 @@
 <section class="slider"
+  (window:resize)="onResize($event)"
   (mouseup)="onMouseUp($event)"
   (mouseout)="onMouseOut($event)"
   (mousemove)="onMouseMove($event)">
   <div class="slider__text">
     {{params.begin}}
   </div>
-  <div class="slider__body"
-    #sliderBody 
+  <div #sliderBody
+    class="slider__body"
     [ngStyle]="getSliderBodyStyles()">
     <div class="slider__body-point"
-      #pointLeft 
       [ngStyle]="points.leftStyles"
       (mousedown)="onMouseDown($event, 'left')">
       F
     </div>
+    <div [class]="(sliderError ? 'slider__body-state slider__body-state-error' : 'slider__body-state')"
+      [ngStyle]="stateIntervalStyle(state)">
+    </div>
     <div class="slider__body-point"
-      #pointRight
       [ngStyle]="points.rightStyles"
       (mousedown)="onMouseDown($event, 'right')">
       T
     </div>
-    <div *ngFor="let block of params.constraints; index as i; trackBy: index"
+    <div *ngFor="let block of blocks; index as i; trackBy: index"
       [ngStyle]="blockedIntervalStyle(block)"
-      class="slider__body-block">
+      [class]="(block.error ? 'slider__body-block slider__body-block-error' : 'slider__body-block')">
     </div>
   </div>
   <div class="slider__text">
