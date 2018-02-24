@@ -1,0 +1,48 @@
+.slider {
+  width: 100%;
+  padding: 8px 0;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+
+  &__text {
+    font-size: 16px;
+    font-weight: bold;
+    width: 50px;
+    text-align: center;
+    user-select: none;
+  }
+
+  &__body {
+    width: calc(100% - 100px);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    user-select: none;
+
+    &-point {
+      position: absolute;
+      border-radius: 50%;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      background-color: #ffffff;
+      cursor: pointer;
+      z-index: 5;
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      font-size: 8px;
+      font-weight: bold;
+
+      &:hover {
+        background-color: #dddddd;
+      }
+    }
+
+    &-block {
+      position: absolute;
+      height: 100%;
+      background-color: #ef5350;
+      z-index: 2;
+    }
+  }
+}
