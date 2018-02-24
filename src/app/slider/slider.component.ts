@@ -48,12 +48,14 @@ export class SliderComponent implements OnInit {
       end: null,
       from: null,
       to: null,
-      constraints: !this.props.constraints ? [] : this.props.constraints
+      constraints: null
     };
     this.params.end = !this.props.end || (this.props.end && this.props.end <= this.params.begin) ? this.params.begin + 100 : this.props.end;
     this.params.from = !this.props.from || this.props.from >= this.params.end || this.props.from < this.params.from ? 0 : this.props.from;
     this.params.to = !this.props.to || this.props.to <= this.params.from || this.props.to > this.params.end ? this.params.from + 10 : this.props.to;
 
+    this.params.constraints = !this.props.constraints ? [] : this.constraintsCorrection( this.props.constraints);
+    console.log(this.params.constraints);
     this.state = {
       from: this.params.from,
       to: this.params.to
@@ -135,6 +137,21 @@ export class SliderComponent implements OnInit {
 
   checkState(): boolean {
     return !this.blocks.some(item => item.error);
+  }
+
+  constraintsCorrection(blocks: {from: number, to: number}[]): {from: number, to: number}[] {
+    return blocks.map(item => {
+      if (item.from >= this.params.begin && item.from < this.params.end && item.to <= this.params.end && item.to > this.params.begin) {
+        return item;
+      } else {
+        const from = (item.from >= this.params.begin) && (item.from < this.params.end) ? item.from : this.params.begin;
+        const to = (item.to <= this.params.end) && (item.to > from) ? item.to : (item.to <= from ? from + 1 : this.params.end);
+        return {
+          from,
+          to
+        };
+      }
+    });
   }
 
   onMouseDown(ev: MouseEvent, field: 'left'|'right'): void {
